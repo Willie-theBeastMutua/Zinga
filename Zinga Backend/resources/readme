@@ -1,0 +1,19 @@
+$ php init --env=Development
+$ php init --env=Production
+$ curl -sS https://getcomposer.org/installer | php
+$ php composer.phar update
+sudo php composer.phar update --ignore-platform-reqs
+
+sudo chgrp www-data ./assets
+sudo chmod g+w ./assets/
+
+
+  'deanisty/gii-rest' => 
+  array (
+    'name' => 'deanisty/gii-rest',
+    'version' => '1.0.0.0',
+    'alias' => 
+    array (
+      '@deanisty' => $vendorDir . '/deanisty/src',
+    ),
+  ),

@@ -1,0 +1,55 @@
+.test{
+	background-color: black;
+}
+
+table.table-bordered {
+
+	border: 1px solid black;
+	
+}
+
+table {
+	border-collapse: collapse;
+	width: 100%;
+	border-spacing: 0;
+}
+
+.table-cell {
+	font-size: 10px; 
+	border: solid 1px black;
+}
+
+.table-cell-heading {
+	font-size: 15px;
+	font-weight:bold;
+}
+
+.table-cell-text {
+	font-size: 13px;
+}
+
+.table-cell-sub-heading {
+	font-size: 12px;;
+}
+
+.space {
+	padding: 0px;
+	margin: 5px;
+}
+
+.heading {
+	font-size: 17px;
+	font-weight: bold;
+	padding: 0px;
+	margin: 10px 0 0 0;
+}
+
+.text {
+	padding: 0px;
+	margin: 0 0 5px 0;
+	font-size: 12px;
+}
+
+.center {
+	text-align: center;
+}

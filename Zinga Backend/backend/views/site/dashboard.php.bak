@@ -1,0 +1,2033 @@
+<?php
+
+use yii\grid\GridView;
+
+/* @var $this yii\web\View */
+$baseUrl = Yii::$app->request->baseUrl;
+
+$this->title = 'Integrated Dashboard';
+?>
+<?php
+/* @var $this yii\web\View */
+/* @var $name string */
+/* @var $message string */
+/* @var $exception Exception */
+
+use yii\helpers\Html;
+use yii\widgets\ActiveForm;
+
+$baseUrl = Yii::$app->request->baseUrl;
+
+$this->title = 'Dashboard';
+
+$svg_file = file_get_contents('app-assets/images/kenya_map.svg');
+
+$find_string = '<svg';
+$position = strpos($svg_file, $find_string);
+
+$svg_file_new = substr($svg_file, $position);
+?>
+<style>
+    .tabs-header {
+        padding: 0.5em 0 0.5em;
+    }
+
+    .nav.nav-tabs.nav-iconfall .nav-item a.nav-link {
+        padding: 0.5em 0 0.5em;
+        color: #74777B;
+    }
+
+    .nav.nav-tabs.nav-iconfall .nav-item a.active {
+        color: #660066 !important;
+        border: none;
+        background-color: transparent;
+        font-weight: 700;
+        /* border-bottom: 2px solid #660066 !important; */
+    }
+    .highcharts-container{
+        width: 100% !important;
+    }
+
+    .highcharts-root{
+        width: 100% !important;
+    }
+    .numberColumn{
+        text-align: right;
+    }
+</style>
+
+<!-- Zero configuration table -->
+<section id="configuration">
+    <div class="row">
+        <div class="col-12">
+            <section class="flexbox-container">
+                <div class="card-content collapse show">
+                    <div class="card">
+                        <div class="card-body">
+                            <form method="POST">
+                                <div class="row">
+                                    <div class="col-md-3"> 
+                                        <label>County</label>                                    
+                                        <select name="county" id="THEcounty" class="form-control select21">
+                                            <option value="">Select...</option>
+                                            <?php foreach ($counties as $c) { ?>
+                                                <option  value="<?php echo $c['county']; ?>"><?php echo $c['county']; ?></option>
+                                            <?php } ?>
+                                        </select>
+                                    </div>
+                                    <div class="col-md-3">
+                                        <label>Subcounty  <span class="SCLoader" class="btn btn-primary btn-lg" type="button" disabled>
+
+                                            </span></label>
+                                        <select name="subcounty" id="THEsubcounty" class="form-control select2">                                     
+                                        </select>
+                                    </div>
+                                    <div class="col-md-2">
+                                        <label>Year</label>
+                                        <select name="year" id="year" class="form-control select2">
+                                            <option value="">Select...</option>
+                                            <option  value="2020">2020</option>
+                                            <option  selected="selected" value="2021">2021</option>
+                                            <option  selected ="2022">2022</option>
+                                        </select>
+                                        <?php /* $form->field($filter, 'facilityId')->dropDownList($facilities, ['prompt' => 'Select...', 'class' => 'form-control select2']) */ ?>	
+                                    </div>
+                                    <div class="col-md-2">
+                                        <label>Month</label>
+                                        <select name="month" id="month" class="form-control select2">
+                                            <option selected value='00'>Select..</option>
+                                            <option value='01'>January</option>
+                                            <option value='02'>February</option>
+                                            <option value='03'>March</option>
+                                            <option value='04'>April</option>
+                                            <option value='05'>May</option>
+                                            <option value='06'>June</option>
+                                            <option value='07'>July</option>
+                                            <option value='08'>August</option>
+                                            <option value='09'>September</option>
+                                            <option value='10'>October</option>
+                                            <option value='11'>November</option>
+                                            <option value='12'>December</option>
+                                        </select>
+                                        <?php /* $form->field($filter, 'facilityId')->dropDownList($facilities, ['prompt' => 'Select...', 'class' => 'form-control select2']) */ ?>	
+                                    </div>
+                                    <div class="col-md-1">
+                                        <?= Html::Button('<i class="ft-search"></i> Filter', ['class' => 'btn btn-primary filter_me_button', 'style' => 'margin-top: 25px']); ?>
+                                    </div>	                            	
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </div>
+    </div>
+</section>
+<div class="row">
+    <div class="col-12">
+        <section class="flexbox-container">
+
+            <ul class="nav nav-tabs nav-iconfall">
+                <li class="nav-item">
+                    <a class="nav-link" id="baseIcon-coup" data-toggle="tab" aria-controls="coup" href="#coup" aria-expanded="true">Coverage & Uptake</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" id="baseIcon-hts" data-toggle="tab" aria-controls="hts" href="#hts" aria-expanded="true">HTS</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" id="baseIcon-pmtct" data-toggle="tab" aria-controls="pmtct" href="#pmtct" aria-expanded="true">PMTCT</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" id="baseIcon-ct" data-toggle="tab" aria-controls="ct" href="#ct" aria-expanded="true">Care & Treatment</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" id="baseIcon-vl" data-toggle="tab" aria-controls="vl" href="#vl" aria-expanded="true">Virologic suppression</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" id="baseIcon-rates" data-toggle="tab" aria-controls="rates" href="#rates" aria-expanded="true">Reporting rates</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link active" id="baseIcon-commodity" data-toggle="tab" aria-controls="commodity" href="#commodity" aria-expanded="true">Commodity reports</a>
+                </li>
+
+            </ul>
+            <div class="tab-content px-1 pt-1">
+                <div role="tabpanel" class="tab-pane" id="coup" aria-expanded="true" aria-labelledby="baseIcon-coup">
+                    <div class="card">
+                        <div class="card-body">
+
+                            <div class="row match-height p-1">
+                                <p><h3><b>1. Coverage</b></h3></p>
+                                <ul>
+                                    <li>Gives full visual information on the overall coverage progress towards 95-95-95 Clinical Cascade</li>
+                                    <li>This progress is dependent on Variables:
+                                        <ul>
+                                            <li>1<sup>st</sup> 90 Currently On Care against PLHIV Estimate (2020)</li>
+                                            <li>2<sup>nd</sup> 90 Currently On ART against PLHIV Estimate (2020)</li>
+                                            <li>3<sup>rd</sup> 90 Virally Suppressed  against PLHIV Estimate (2020)</li>
+                                        </ul>
+                                    </li>
+                                </ul>  
+
+                            </div>
+
+                        </div>
+                    </div>
+                    <div class="row match-height">
+                        <div class="col-xl-6 col-12">			
+                            <div class="card">
+                                <div class="card-content  ">
+                                    <div class="card-body p-1">
+                                        <figure class="highcharts-figure">
+                                            <div id="container_">
+                                                <button class="btn btn-primary btn-lg" type="button" disabled>
+                                                    <i class="fa fa-refresh fa-spin"></i> Loading Visual...
+                                                </button>
+                                            </div>                
+                                        </figure>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="col-xl-6 col-12 ">			
+                            <div class="card ">
+                                <div class="card-content" style="">
+                                    <div class="card-body p-1">
+                                        <figure class="highcharts-figure">
+                                            <div id="container_three1">
+                                                <button class="btn btn-primary btn-lg" type="button" disabled>
+                                                    <i class="fa fa-refresh fa-spin"></i> Loading Visual...
+                                                </button>
+                                            </div>                
+                                        </figure>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row match-height">
+                        <div class="col-xl-6 col-12">			
+                            <div class="card">
+                                <div class="card-content  ">
+                                    <div class="card-body p-1">
+                                        <figure class="highcharts-figure">
+                                            <div id="container_khis">
+                                                <button class="btn btn-primary btn-lg" type="button" disabled>
+                                                    <i class="fa fa-refresh fa-spin"></i> Loading Visual...
+                                                </button>
+                                            </div>                
+                                        </figure>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="col-xl-6 col-12 ">			
+                            <div class="card ">
+                                <div class="card-content" style="">
+                                    <div class="card-body p-1">
+                                        <figure class="highcharts-figure">
+                                            <div id="container_disag">
+                                                <button class="btn btn-primary btn-lg" type="button" disabled>
+                                                    <i class="fa fa-refresh fa-spin"></i> Loading Visual...
+                                                </button>
+                                            </div>                
+                                        </figure>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="card">
+                        <div class="card-body">
+
+                            <div class="row match-height p-1">
+                                <p><h3><b>2. Uptake</b></h3></p>
+                                <ul>
+                                    <li>Gives full visual information on the overall uptake progress towards 95-95-95 Clinical Cascade</li>
+                                    <li>This progress is dependent on Variables:
+                                        <ul>
+                                            <li>1<sup>st</sup> 90 Currently On Care against PLHIV Estimate (2020)</li>
+                                            <li>2<sup>nd</sup> 90 Currently On ART against Currentyl On Care</li>
+                                            <li>3<sup>rd</sup> 90 Virally Suppressed  against Currently On ART</li>
+                                        </ul>
+                                    </li>
+                                </ul>  
+
+                            </div>
+
+                        </div>
+                    </div>
+
+                    <div class="row match-height">
+                        <div class="col-xl-6 col-12">			
+                            <div class="card">
+                                <div class="card-content  ">
+                                    <div class="card-body p-1">
+                                        <figure class="highcharts-figure">
+                                            <div id="container_up_one">
+                                                <button class="btn btn-primary btn-lg" type="button" disabled>
+                                                    <i class="fa fa-refresh fa-spin"></i> Loading Visual...
+                                                </button>
+                                            </div>                
+                                        </figure>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="col-xl-6 col-12 ">			
+                            <div class="card ">
+                                <div class="card-content" style="">
+                                    <div class="card-content">
+                                        <div class="card-body">
+                                            <ul class="nav nav-tabs nav-underline no-hover-bg">
+                                                <li class="nav-item">
+                                                    <a class="nav-link active" id="base-tab31" data-toggle="tab" aria-controls="tab31" href="#tab31" aria-expanded="true">ALL</a>
+                                                </li>
+                                                <li class="nav-item">
+                                                    <a class="nav-link" id="base-tab32" data-toggle="tab" aria-controls="tab32" href="#tab32" aria-expanded="false">DISAGGREGATED</a>
+                                                </li>
+
+                                            </ul>
+                                            <div class="tab-content">
+                                                <div role="tabpanel" class="tab-pane active" id="tab31" aria-expanded="true" aria-labelledby="base-tab31">
+                                                    <div class="row">
+                                                        <select class="form-control" id="MFChanger">
+                                                            <option value="all">Overall</option>
+                                                            <option value="am">Adult Male (15+ Years)</option>
+                                                            <option value="af">Adult Female (15+ Years)</option>
+                                                            <option value="cm">Children Male (10 - 14 Years)</option>
+                                                            <option value="cf">Children Female (10 - 14 Years)</option>
+                                                        </select>
+                                                    </div>
+                                                    <div id="container_up_three_two">
+                                                        <button class="btn btn-primary btn-lg" type="button" disabled>
+                                                            <i class="fa fa-refresh fa-spin"></i> Loading Visual...
+                                                        </button>
+                                                    </div>  
+                                                </div>
+                                                <div class="tab-pane" id="tab32" aria-labelledby="base-tab32">
+                                                    
+                                                    <div id="container_up_three_two_two">
+                                                        <button class="btn btn-primary btn-lg" type="button" disabled>
+                                                            <i class="fa fa-refresh fa-spin"></i> Loading Visual...
+                                                        </button>
+                                                    </div>
+                                                </div>
+
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+
+                </div>
+                <div role="tabpanel" class="tab-pane " id="hts" aria-expanded="true" aria-labelledby="baseIcon-hts">
+
+                    <h4 class="form-section section-header">HTS</h4>
+
+                    <div class="row match-height">
+                        <div class="col-xl-6 col-12">			
+                            <div class="card">
+
+                                <div class="card-content collapse show">
+                                    <div class="card-body p-0">                                    
+
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="col-xl-6 col-12 ">			
+                            <div class="card ">
+                                <div class="card-content" style="">
+                                    <div class="card-body p-1">
+
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+                <div role="tabpanel" class="tab-pane" id="pmtct" aria-expanded="true" aria-labelledby="baseIcon-pmtct">
+
+                    <h4 class="form-section section-header">PMTCT</h4>
+
+                    <div class="row match-height">
+                        <div class="col-xl-6 col-12">			
+                            <div class="card">
+
+                                <div class="card-content collapse show">
+                                    <div class="card-body p-0">                                    
+
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="col-xl-6 col-12 ">			
+                            <div class="card ">
+                                <div class="card-content" style="">
+                                    <div class="card-body p-1">
+
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+                <div role="tabpanel" class="tab-pane" id="vl" aria-expanded="true" aria-labelledby="baseIcon-vl">
+
+                    <h4 class="form-section section-header">Virological Suppression</h4>
+
+                    <div class="row match-height">
+                        <div class="col-xl-6 col-12">			
+                            <div class="card">
+
+                                <div class="card-content collapse show">
+                                    <div class="card-body p-0">                                    
+
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="col-xl-6 col-12 ">			
+                            <div class="card ">
+                                <div class="card-content" style="">
+                                    <div class="card-body p-1">
+                                        <div id="radar1" style="width:100%; height:400px;"></div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+                <div role="tabpanel" class="tab-pane" id="rates" aria-expanded="true" aria-labelledby="baseIcon-rates">
+
+                    <h4 class="form-section section-header">REPORTING RATES</h4>
+
+                    <div class="row match-height">
+                        <div class="col-xl-6 col-12">			
+                            <div class="card">
+
+                                <div class="card-content collapse show">
+                                    <div class="card-body p-0">                                    
+
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="col-xl-6 col-12 ">			
+                            <div class="card ">
+                                <div class="card-content" style="">
+                                    <div class="card-body p-1">
+                                        <div id="radar2" style="width:100%; height:400px;"></div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+                <div role="tabpanel" class="tab-pane active" id="commodity" aria-expanded="true" aria-labelledby="baseIcon-commodity">
+
+                    <h4 class="form-section section-header">COMMODITY REPORTS</h4>
+
+                    <div class="row match-height">
+                        <div class="col-xl-3 col-lg-6 col-12">
+                            <div class="card pull-up">
+                                <div class="card-content">
+                                    <div class="card-body">
+                                        <div class="media d-flex">
+                                            <div class="media-body text-left">
+                                                <h3 class="info onART stat">
+                                                    <button class="btn btn-primary btn-lg" type="button" disabled>
+                                                        <i class="fa fa-refresh fa-spin"></i> Loading Stats...
+                                                    </button>
+                                                </h3>
+                                                <h4><b>All Clients on ART</b> <img width="55px" height="45px" src="<?php echo $baseUrl . '/uploads/capsule.png'; ?>"></h4>
+                                            </div>
+                                            <div>
+                                                <span class="float-right">
+                                                    <img width="70px" height="50px" src="<?php echo $baseUrl . '/uploads/infographmenwomenchildren.png'; ?>">
+                                                </span>
+                                            </div>
+                                        </div>
+                                        <div class="">
+                                            <table>
+                                                <tr>
+                                                    <td><img width="15px" height="25px" src="<?php echo $baseUrl . '/uploads/men.png'; ?>"> <span class="MEN"><i class="fa fa-refresh fa-spin"></i></span>  </td>                                                </span></td>
+                                                    <td><img width="15px" height="25px" src="<?php echo $baseUrl . '/uploads/women.png'; ?>"> <span class="WOMEN"><i class="fa fa-refresh fa-spin"></i></span>  </td>
+                                                    <td><img width="40px" height="27px" src="<?php echo $baseUrl . '/uploads/motherchild.png'; ?>"> <span class="PMTCT"><i class="fa fa-refresh fa-spin"></i></span>  </td>
+                                                </tr>
+                                            </table>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-xl-3 col-lg-6 col-12">
+                            <div class="card pull-up">
+                                <div class="card-content">
+                                    <div class="card-body">
+                                        <div class="media d-flex">
+                                            <div class="media-body text-left">
+                                                <h3 class="warning onARTAdult stat">
+                                                    <button class="btn btn-primary btn-lg" type="button" disabled>
+                                                        <i class="fa fa-refresh fa-spin"></i> Loading Stats...
+                                                    </button>
+                                                </h3>
+                                                <h4><b>Adults - on ART</b> <img width="55px" height="45px" src="<?php echo $baseUrl . '/uploads/capsule.png'; ?>"></h4>
+                                            </div>
+                                            <div>
+                                                <span class="float-right">
+                                                    <img width="70px" height="55px" src="<?php echo $baseUrl . '/uploads/mf.png'; ?>">
+                                                </span>
+                                            </div>
+                                        </div>
+                                        <div class="">
+                                            <table>
+                                                <tr>
+                                                    <td><img width="15px" height="25px" src="<?php echo $baseUrl . '/uploads/men.png'; ?>"> <span class="MEN"><i class="fa fa-refresh fa-spin"></i></span>  </td>                                                </span></td>
+                                                    <td><img width="15px" height="25px" src="<?php echo $baseUrl . '/uploads/women.png'; ?>"> <span class="WOMEN"><i class="fa fa-refresh fa-spin"></i></span>  </td>
+                                                </tr>
+                                            </table>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-xl-3 col-lg-6 col-12">
+                            <div class="card pull-up">
+                                <div class="card-content">
+                                    <div class="card-body">
+                                        <div class="media d-flex">
+                                            <div class="media-body text-left">
+                                                <h3 class="success onARTPaed stat">
+                                                    <button class="btn btn-primary btn-lg" type="button" disabled>
+                                                        <i class="fa fa-refresh fa-spin"></i> Loading Stats...
+                                                    </button>
+                                                </h3>
+                                                <h4><b>Paeds - On ART</b> <img width="55px" height="45px" src="<?php echo $baseUrl . '/uploads/capsule.png'; ?>"></h4>
+                                            </div>
+                                            <div>
+                                                <span class="float-right">
+                                                    <img width="65px" height="55px" src="<?php echo $baseUrl . '/uploads/children.png'; ?>">
+                                                </span>
+                                            </div>
+                                        </div>
+                                        <div class="">
+                                            <table>
+                                                <tr>
+                                                    <td><img width="15px" height="25px" src="<?php echo $baseUrl . '/uploads/paedmm.png'; ?>"> <span class="PAEDM"><i class="fa fa-refresh fa-spin"></i></span>  </td>                                                </span></td>
+                                                    <td><img width="15px" height="25px" src="<?php echo $baseUrl . '/uploads/paedf.png'; ?>"> <span class="PAEDF"><i class="fa fa-refresh fa-spin"></i></span> </td>
+                                                </tr>
+                                            </table>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-xl-3 col-lg-6 col-12">
+                            <div class="card pull-up">
+                                <div class="card-content">
+                                    <div class="card-body">
+                                        <div class="media d-flex">
+                                            <div class="media-body text-left">
+                                                <h3 class="success onARTPmtct stat">
+                                                    <button class="btn btn-primary btn-lg" type="button" disabled>
+                                                        <i class="fa fa-refresh fa-spin"></i> Loading Stats...
+                                                    </button>
+                                                </h3>
+                                                <h4><b>PMTCT</b> <img width="55px" height="45px" src="<?php echo $baseUrl . '/uploads/capsule.png'; ?>"></h4>
+                                            </div>
+                                            <div>
+                                                <img title="PMTCT" width="80px" height="60px" src="<?php echo $baseUrl . '/uploads/motherchild.png'; ?>">
+                                            </div>
+                                        </div>
+                                        <div class="">
+                                            <table>
+                                                <tr>
+                                                    <td><img title="PMTCT Mother" width="40px" height="30px" src="<?php echo $baseUrl . '/uploads/motherchild.png'; ?>"> <span class="PMTCTMOTHER"><i class="fa fa-refresh fa-spin"></i></span>  </td>                                                </span></td>
+                                                    <td>     <img title="PMTCT Child" width="20px" height="25px" src="<?php echo $baseUrl . '/uploads/children.png'; ?>"><span class="PMTCTCHILD"><i class="fa fa-refresh fa-spin"></i></span>  </td>
+                                                </tr>
+                                            </table>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row match-height">
+                        <!--                        <div class="col-xl-6 col-12 ">			
+                                                    <div class="card ">
+                                                        <div class="card-content" style="">
+                                                            <div class="card-body p-1" id="reportingRates">
+                                                                <button class="btn btn-primary btn-lg" type="button" disabled>
+                                                                    <i class="fa fa-refresh fa-spin"></i> Loading Visual...
+                                                                </button>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>-->
+                        <div class="col-xl-12 col-12 ">			
+                            <div class="card ">
+                                <div class="card-content" style="">
+                                    <div class="card-body p-1" id="reportingRates">
+                                        <button class="btn btn-primary btn-lg" type="button" disabled>
+                                            <i class="fa fa-refresh fa-spin"></i> Loading Visual...
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+
+                    </div>
+                    <div class="row match-height">
+                        <div class="col-xl-12 col-12 ">			
+                            <div class="card ">
+                                <div class="card-content" style="">
+                                    <div class="card-body p-1">
+                                        <span class="float-left">COMMODITY CONSUMPTION TREND FILTER </span>
+                                        <span class="float-right">
+                                            <select class="form-control" id="COMMODITIES"  name="drug"  style="width:300px;">
+                                                <option selected="selected" value="Tenofovir/Lamivudine/Dolutegravir (TDF/3TC/DTG) 300/300/50mg FDC Tabs">Tenofovir/Lamivudine/Dolutegravir (TDF/3TC/DTG) 300/300/50mg FDC Tabs</option>
+                                                <?php foreach ($drugs as $d) { ?>
+                                                    <option value="<?php echo $d['name']; ?>"><?php echo $d['name']; ?></option>
+                                                <?php } ?>
+                                            </select>
+                                        </span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>        
+                    </div>
+                    <div class="row match-height">
+                        <div class="col-xl-6 col-12 ">			
+                            <div class="card ">
+                                <div class="card-content" style="">
+                                    <div class="card-body p-1" id="monthlyConsumption">
+                                        <button class="btn btn-primary btn-lg" type="button" disabled>
+                                            <i class="fa fa-refresh fa-spin"></i> Loading Visual...
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-xl-6 col-12 ">			
+                            <div class="card ">
+                                <div class="card-content" style="">
+                                    <div class="card-body p-1" id="monthlySoh">
+                                        <button class="btn btn-primary btn-lg" type="button" disabled>
+                                            <i class="fa fa-refresh fa-spin"></i> Loading Visual...
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+
+                    </div>
+                    <div class="row match-height">
+                        <div class="col-xl-6 col-12 ">			
+                            <div class="card ">
+                                <div class="card-content" style="">
+                                    <div class="card-body p-1" id="2pager1">
+                                        <button class="btn btn-primary btn-lg" type="button" disabled>
+                                            <i class="fa fa-refresh fa-spin"></i> Loading Visual...
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-xl-6 col-12 ">			
+                            <div class="card ">
+                                <div class="card-content" style="">
+                                    <div class="card-body p-1" id="2pager2">
+                                        <button class="btn btn-primary btn-lg" type="button" disabled>
+                                            <i class="fa fa-refresh fa-spin"></i> Loading Visual...
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+
+                    </div>
+                    <div class="row match-height">
+                        <div class="col-xl-6 col-12 ">			
+                            <div class="card ">
+                                <div class="card-content" style="">
+                                    <div class="card-body p-1" id="AdultMos">
+                                        <button class="btn btn-primary btn-lg" type="button" disabled>
+                                            <i class="fa fa-refresh fa-spin"></i> Loading Visual...
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-xl-6 col-12 ">			
+                            <div class="card ">
+                                <div class="card-content" style="">
+                                    <div class="card-content" style="">
+                                        <div class="card-body p-1"  id="PaedMos">
+                                            <button class="btn btn-primary btn-lg" type="button" disabled>
+                                                <i class="fa fa-refresh fa-spin"></i> Loading Visual...
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row match-height">
+                        <div class="col-xl-12 col-lg-12">
+                            <div class="card">
+                                <div class="card-header">
+                                    <h4 class="card-title">Low and High Months of Stock</h4>
+                                </div>
+                                <div class="card-content">
+                                    <div class="card-body">
+
+                                        <ul class="nav nav-tabs nav-top-border no-hover-bg nav-justified">
+                                            <li class="nav-item">
+                                                <a class="nav-link active" id="active-tab1" data-toggle="tab" href="#active1" aria-controls="active1" aria-expanded="true"><b>Low MOS in Facilities</b></a>
+                                            </li>
+                                            <li class="nav-item">
+                                                <a class="nav-link" id="link-tab1" data-toggle="tab" href="#link1" aria-controls="link1" aria-expanded="false"><b>High MOS in Facilities</b></a>
+                                            </li>
+
+                                        </ul>
+                                        <div class="tab-content px-1 pt-1">
+                                            <div role="tabpanel" class="tab-pane active" id="active1" aria-labelledby="active-tab1" aria-expanded="true">
+                                                <div class="table-responsive">
+                                                    <table class="table table-striped table-bordered bootstrap-3" id="lowMOSTable">
+                                                        <thead>
+                                                            <tr>
+                                                                <th>Drug</th>
+                                                                <th>Facility</th>
+                                                                <th>County</th>
+                                                                <th>Subcounty</th>
+                                                                <th>Tx_curr</th>
+                                                                <th>Stock on Hand</th>
+                                                                <th>AMC</th>
+                                                                <th>MOS</th>
+                                                            </tr>
+                                                        </thead>
+                                                        <tbody>                                                                      
+
+
+                                                        </tbody>
+
+                                                    </table>
+                                                </div>
+                                            </div>
+                                            <div class="tab-pane" id="link1" role="tabpanel" aria-labelledby="link-tab1" aria-expanded="false">
+                                                <div class="table-responsive">
+                                                    <table class="table table-striped table-bordered bootstrap-3" id="highMOSTable">
+                                                        <thead>
+                                                            <tr>
+                                                                <th>Drug</th>
+                                                                <th>Facility</th>
+                                                                <th>County</th>
+                                                                <th>Subcounty</th>
+                                                                <th>Tx_curr</th>
+                                                                <th>Stock on Hand</th>
+                                                                <th>AMC</th>
+                                                                <th>MOS</th>
+                                                            </tr>
+                                                        </thead>
+                                                        <tbody>                                                                      
+
+
+                                                        </tbody>
+
+                                                    </table>
+                                                </div>
+                                            </div>
+
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row match-height">
+                        <div class="col-xl-12 col-12 ">			
+                            <div class="card ">
+                                <div class="card-content" style="">
+                                    <div class="card-body p-1" id="stockTable">
+                                        <!-- Bootstrap 3 table -->
+                                        <section id="bootstrap3">
+                                            <div class="row">
+                                                <div class="col-12">
+                                                    <div class="card">
+                                                        <div class="card-header">
+                                                            <h4 class="card-title">STOCK STATUS</h4>
+
+                                                        </div>
+                                                        <div class="card-content collapse show">
+                                                            <div class="card-body card-dashboard">
+
+                                                                <div class="table-responsive">
+                                                                    <table class="table table-striped table-bordered bootstrap-3" id="StockStstusTable">
+                                                                        <thead>
+                                                                            <tr>
+                                                                                <th>County</th>
+                                                                                <th>Subcounty</th>
+                                                                                <th>Facility</th>
+                                                                                <th>Drug</th>
+                                                                                <th>Tx_curr</th>
+                                                                                <th>Stock on Hand</th>
+                                                                                <th>Consumed Qty</th>
+                                                                                <th>Received Qty</th>
+                                                                            </tr>
+                                                                        </thead>
+                                                                        <tbody>                                                   
+
+
+                                                                        </tbody>
+
+                                                                    </table>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </section>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                    </div>   
+
+
+                </div>
+            </div>
+        </section>
+    </div>
+</div>
+
+<script src="<?= Yii::$app->request->baseUrl; ?>/app-assets/js/jquery.min.js"></script>
+<script src="<?= Yii::$app->request->baseUrl; ?>/app-assets/vendors/js/forms/select/select2.full.min.js"></script>
+<script> $(".select2").select2();</script>
+<script>
+    $(function () {
+
+        $khis_container = $('#container_khis');
+        filter_data = {
+            county: '',
+            subcounty: '',
+            year: '2021',
+            month: '',
+            age_group: '',
+            drug: 'Tenofovir/Lamivudine/Dolutegravir (TDF/3TC/DTG) 300/300/50mg FDC Tabs'
+        };
+        $('.filter_me_button').click(function () {
+            $("[id*=container_]").empty();
+            $("[id*=container_]").append('<button class="btn btn-primary btn-lg" type="button" disabled><i class="fa fa-refresh fa-spin"></i> Loading Visual...</button>');
+            $(".stat").empty();
+            $(".stat").append('<button class="btn btn-primary btn-lg" type="button" disabled><i class="fa fa-refresh fa-spin"></i> Loading Stats...</button>');
+            filter_data.county = $('#THEcounty').val();
+            filter_data.subcounty = $('#THEsubcounty').val();
+            filter_data.year = $('#year').val();
+            filter_data.month = $('#month').val();
+            //loadMainDashboard(filter_data);
+            loadCommodityDashboard(filter_data);
+        });
+        loadMainDashboard(filter_data);
+        loadCommodityDashboard(filter_data);
+        $('#MFChanger').change(function () {
+            $("#container_up_three_two").empty();
+            $("#container_up_three_two").append('<button class="btn btn-primary btn-lg" type="button" disabled><i class="fa fa-refresh fa-spin"></i> Loading Visual...</button>');
+            value = $(this).val();
+            filter_data.age_group = value;
+            $.post("<?php echo $baseUrl . '/site/uptakeclassificationtwo_filter'; ?>", filter_data, function (resp) {
+                Highcharts.chart('container_up_three_two_two', {
+                    chart: {
+                        type: 'column'
+                    },
+                    colors: ['#3949AB', '#4A0', '#FFD600'],
+                    title: {
+                        text: 'HIV Uptake'
+                    },
+                    subtitle: {
+                        text: 'Disaggregated by Age Bands'
+                    },
+                    xAxis: {
+                        categories: ['Clients on Care and ART'],
+                    },
+                    yAxis: {
+                        min: 0,
+                        title: {
+                            text: '% Number of clients'
+                        }
+                    },
+                    tooltip: {
+                        pointFormat: '<span style="color:{series.color}">{series.name}</span>: <b>{point.y}</b> ({point.percentage:.0f}%)<br/>',
+                        shared: true
+                    },
+                    plotOptions: {
+                        series: {
+                            dataLabels: {
+                                enabled: true,
+                                align: 'center',
+                                inside: true,
+                                color: '#FFFFFF',
+                                verticalAlign: 'top'
+                            },
+                        },
+                        column: {
+                            stacking: 'percent'
+                        }
+                    },
+                    series: resp
+                });
+            }, 'JSON');
+        });
+        $('#COMMODITIES').change('change', function (e) {
+            drug = $(this).val();
+            filter_data.drug = drug;
+            $.post("<?php echo $baseUrl . '/commodity/consumption'; ?>", filter_data, function (resp) {
+                //console.log(resp[0]['categories'])
+                Highcharts.chart('monthlyConsumption', {
+                    chart: {
+                        type: 'spline'
+                    },
+                    title: {
+                        text: 'Consumption Trend - ' + resp[0]['title']
+                    },
+                    colors: ['#536DFE', '#FF4081'],
+                    subtitle: {
+                        text: 'source : KHIS 729B & 730B Rev.2019'
+                    },
+                    xAxis: {
+                        categories: resp[1]['categories'],
+                        labels: {
+                            rotation: 270
+                        }
+                    },
+                    yAxis: {
+                        title: {
+                            text: 'Packs'
+                        }
+
+                    },
+                    tooltip: {
+                        shared: true,
+                        valueSuffix: ' Packs'
+                    },
+                    credits: {
+                        enabled: false
+                    },
+                    plotOptions: {
+                        spline: {
+                            fillOpacity: 0.5
+                        }
+                    },
+                    series: [{
+                            name: resp[1]['name'],
+                            data: resp[1]['y']
+                        }, {
+                            name: resp[2]['name2'],
+                            data: resp[2]['y2']
+                        }]
+                });
+            }, 'JSON');
+            $.post("<?php echo $baseUrl . '/commodity/soh'; ?>", filter_data, function (resp) {
+                //console.log(resp[0]['categories'])
+
+                Highcharts.chart('monthlySoh', {
+                    chart: {
+                        type: 'spline'
+                    },
+                    title: {
+                        text: ' AMC vs MOS- ' + resp[0]['title']
+                    },
+                    colors: ['#212121', '#6200EA'],
+                    subtitle: {
+                        text: 'source : KHIS 729B & 730B Rev.2019'
+                    },
+                    xAxis: {
+                        categories: resp[1]['categories'],
+                        labels: {
+                            rotation: 270
+                        }
+                    },
+                    yAxis: [
+                        {
+                            lineWidth: 1,
+                            title: {
+                                text: 'AMC Packs'
+                            }
+
+                        }, {
+                            lineWidth: 1,
+                            opposite: true,
+                            title: {
+                                text: 'MOS'
+                            }
+                        },
+                    ],
+                    tooltip: {
+                        shared: true,
+                        valueSuffix: ''
+                    },
+                    credits: {
+                        enabled: false
+                    },
+                    plotOptions: {
+                        spline: {
+                            fillOpacity: 0.5
+                        }
+                    },
+                    series: [{
+                            name: resp[1]['name'],
+                            data: resp[1]['y'],
+                            yAxis: 1
+                        }, {
+                            name: resp[2]['name2'],
+                            data: resp[2]['y2'],
+                        }]
+                });
+            }, 'JSON');
+        });
+        Highcharts.theme = {
+
+            "chart": {
+                "backgroundColor": "#FFFFFF",
+                "style": {
+                    "fontFamily": "Roboto",
+                    "color": "#000000"
+                }
+            },
+            "title": {
+                "align": "left",
+                "style": {
+                    "fontFamily": "Roboto",
+                    "color": "#000000",
+                    "fontWeight": "bold"
+                }
+            },
+            "subtitle": {
+                "align": "left",
+                "style": {
+                    "fontFamily": "Roboto",
+                    "color": "#000000",
+                    "fontWeight": "bold"
+                }
+            },
+            "xAxis": {
+                "lineColor": "#000000",
+                "lineWidth": 2,
+                "tickColor": "#000000",
+                "tickWidth": 2,
+                "labels": {
+
+                    "style": {
+                        "color": "black",
+                        "fontWeight": "bold",
+                        "fontSize": "16"
+                    }
+                },
+                "title": {
+                    "style": {
+                        "color": "black"
+                    }
+                }
+            },
+            "yAxis": {
+                "opposite": false,
+                "gridLineWidth": 2,
+                "gridLineColor": "#F3F3F3",
+                "lineColor": "#CEC6B9",
+                "minorGridLineColor": "#CEC6B9",
+                "labels": {
+                    "align": "left",
+                    "style": {
+                        "color": "black"
+                    },
+                    "x": 0,
+                    "y": -2
+                },
+                "tickLength": 0,
+                "tickColor": "#CEC6B9",
+                "tickWidth": 1,
+                "title": {
+                    "style": {
+                        "color": "black"
+                    }
+                }
+            },
+            "tooltip": {
+                "backgroundColor": "#FFFFFF",
+                "borderColor": "#76c0c1",
+                "style": {
+                    "color": "#000000"
+                }
+            },
+            "legend": {
+                symbolRadius: 0,
+                "layout": "horizontal",
+                "align": "left",
+                "verticalAlign": "top",
+                "itemStyle": {
+                    "color": "#3C3C3C"
+                },
+                "itemHiddenStyle": {
+                    "color": "#606063"
+                }
+            },
+            "credits": {
+                enabled: false
+            },
+            "labels": {
+                "style": {
+                    "color": "#D7D7D8"
+                }
+            },
+            "drilldown": {
+                "activeAxisLabelStyle": {
+                    "color": "#F0F0F3"
+                },
+                "activeDataLabelStyle": {
+                    "color": "#F0F0F3"
+                }
+            },
+            "navigation": {
+                "buttonOptions": {
+                    "symbolStroke": "#DDDDDD",
+                    "theme": {
+                        "fill": "#505053"
+                    }
+                }
+            },
+            "legendBackgroundColor": "rgba(0, 0, 0, 0.5)",
+            "background2": "#505053",
+            "dataLabelsColor": "#B0B0B3",
+            "textColor": "#C0C0C0",
+            "contrastTextColor": "#F0F0F3",
+            "maskColor": "rgba(255,255,255,0.3)"
+        }
+
+        // Apply the theme
+        Highcharts.setOptions(Highcharts.theme);
+        function loadMainDashboard(filter_data) {
+            $.post("<?php echo $baseUrl . '/site/cascade'; ?>", filter_data, function (resp) {
+                // resp.push({'yAxis':1});
+                //alert(resp);
+
+                Highcharts.chart('container_', {
+                    chart: {
+                        type: 'column'
+                    },
+                    colors: ['#F44336', '#4A0', '#FFD600'],
+                    title: {
+                        text: 'HIV 95-95-95 Cascade Coverage'
+                    },
+                    subtitle: {
+                        text: 'Comparisson between PLHIV Estimates and KHIS Current On Care '
+                    },
+                    xAxis: {
+                        categories: ['PLHIV', 'Curently In Care', 'Currently On ART', 'Suppressed']
+                    },
+                    yAxis: [{
+                            min: 0,
+                            title: {
+                                text: 'Number of clients'
+                            }
+                        }, {
+                            pointWidth: 0,
+                            min: 0,
+                            max: 100,
+                            opposite: true,
+                            title: {
+                                text: '% Clinical Cascade'
+                            }
+                        }],
+                    tooltip: {
+                        pointFormat: '<span style="color:{series.color}">{series.name}</span>: <b>{point.y}</b> ({point.percentage:.0f}%)<br/>',
+                        shared: true
+                    },
+                    plotOptions: {
+                        column: {
+                            stacking: 'normal',
+                            dataLabels: {
+                                enabled: true
+                            },
+                        },
+                        series: {
+                            pointWidth: 100,
+                            colors: ['#FF1744', '00C853']
+                        },
+                        line: {
+
+                            dataLabels: {
+                                enabled: true,
+                                format: '{y}%',
+                                style: {
+                                    fontWeight: 'bold',
+                                    fontSize: '17px',
+                                    //color:"#FFF176"
+                                }
+                            }
+                        }
+
+                    },
+                    series: resp
+                })
+            }, 'JSON');
+            $.post("<?php echo $baseUrl . '/site/curroveral'; ?>", filter_data, function (resp) {
+                var chart = Highcharts.chart('container_three1', {
+
+                    chart: {
+                        type: 'column'
+                    },
+                    colors: ['#3949AB', '#4A0', '#FFD600'],
+                    title: {
+                        text: 'Comparison between Current on ART KHIS and PLHIV Estimates'
+                    },
+                    subtitle: {
+                        text: 'Number of Adults and Children'
+                    },
+                    //                legend: {
+                    //                    align: 'bottom',
+                    //                    verticalAlign: 'middle',
+                    //                    layout: 'vertical'
+                    //                },
+
+                    xAxis: {
+                        categories: ['Adult (15+ Years)', 'Children( <15 Years)'],
+                        labels: {
+                            x: -10
+                        }
+                    },
+                    yAxis: [
+                        {
+
+                            min: 0,
+                            opposite: false,
+                            title: {
+                                text: 'Number of clients'
+                            }
+                        },
+                        {
+                            lineWidth: 0,
+                            min: 0,
+                            max: 50,
+                            opposite: true,
+                            title: {
+                                text: '% Concordance'
+                            }
+                        }
+                    ],
+                    plotOptions: {
+                        column: {
+                            stacking: 'normal',
+                            dataLabels: {
+                                enabled: true
+                            },
+                        },
+                        series: {
+                            dataLabels: {
+                                enabled: true,
+                                align: 'center',
+                                inside: true,
+                                color: '#FFFFFF',
+                                verticalAlign: 'top'
+                            },
+                        },
+                        line: {
+
+                            dataLabels: {
+                                enabled: true,
+                                format: '{y}%',
+                                style: {
+                                    fontWeight: 'bold',
+                                    fontSize: '17px',
+                                    //color:"#FFF176"
+                                }
+                            }
+                        }
+                    },
+                    series: resp,
+                });
+            }, 'JSON');
+            $.post("<?php echo $baseUrl . '/site/currentonart'; ?>", filter_data, function (resp) {
+                Highcharts.chart('container_khis', {
+                    chart: {
+                        type: 'column'
+                    },
+                    title: {
+                        text: 'Comparison between Current on ART KHIS vs PLHIV Estimates'
+                    },
+                    colors: ['#3949AB', '#4A0', '#FFD600'],
+                    subtitle: {
+                        text: 'Disaggregated by Gender'
+                    },
+                    xAxis: {
+                        categories: ['Adult Males', 'Adult Females', 'Children Males', 'Children Females']
+                    },
+                    yAxis: [{
+                            min: 0,
+                            title: {
+                                text: 'Number of clients'
+                            }
+                        }, {
+                            lineWidth: 0,
+                            min: 0,
+                            max: 100,
+                            opposite: true,
+                            title: {
+                                text: '% Concordance'
+                            }
+                        }],
+                    tooltip: {
+                        pointFormat: '<span style="color:{series.color}">{series.name}</span>: <b>{point.y}</b><br>',
+                        shared: true
+                    },
+                    plotOptions: {
+                        series: {
+                            dataLabels: {
+                                enabled: true,
+                                align: 'center',
+                                inside: true,
+                                color: '#FFFFFF',
+                                verticalAlign: 'top'
+                            },
+                        },
+                        column: {
+                            stacking: 'normal'
+                        },
+                        line: {
+
+                            dataLabels: {
+                                enabled: true,
+                                format: '{y}%',
+                                style: {
+                                    fontWeight: 'bold',
+                                    fontSize: '17px',
+                                    color: "#000"
+                                }
+                            }
+                        }
+                    },
+                    series: resp
+                });
+            }, 'JSON');
+            $.post("<?php echo $baseUrl . '/site/khisdisag'; ?>", filter_data, function (resp) {
+
+                var categories = ['10-14', '15-19', '20-24', '25+'];
+                Highcharts.chart('container_disag', {
+                    chart: {
+                        type: 'bar'
+                    },
+                    title: {
+                        text: 'Current on ART Disaggregated by Age and Sex'
+                    },
+                    colors: ['#42A5F5', '#EC407A', '#FFD600'],
+                    subtitle: {
+                        text: ''
+                    },
+                    accessibility: {
+                        point: {
+                            valueDescriptionFormat: '{index}. Age {xDescription}, {value}.'
+                        }
+                    },
+                    xAxis: [{
+                            categories: categories,
+                            reversed: false,
+                            labels: {
+                                step: 1
+                            },
+                            accessibility: {
+                                description: 'Age (male)'
+                            }
+                        }, {// mirror axis on right side
+                            opposite: true,
+                            reversed: false,
+                            categories: categories,
+                            linkedTo: 0,
+                            accessibility: {
+                                description: 'Age (female)'
+                            },
+                        }],
+                    yAxis: {
+                        title: {
+                            text: null
+                        },
+                        labels: {
+                            formatter: function () {
+                                return numberWithCommas(Math.abs(this.value));
+                            }
+                        },
+                        accessibility: {
+                            description: 'Client Percentage',
+                            // rangeDescription: 'Range: 0 to 5'
+                        }
+                    },
+                    plotOptions: {
+                        series: {
+                            dataLabels: {
+                                enabled: true,
+                                align: 'center',
+                                inside: true,
+                                color: '#FFFFFF',
+                                verticalAlign: 'right',
+                                formatter: function () {
+                                    return Highcharts.numberFormat(Math.abs(this.y), 0);
+                                }
+                            },
+                            stacking: 'normal'
+                        }
+                    },
+                    tooltip: {
+                        formatter: function () {
+                            return '<b>' + this.series.name + ', age ' + this.point.category + '</b><br/>' +
+                                    'Clients: ' + Highcharts.numberFormat(Math.abs(this.point.y), 0);
+                        }
+                    },
+                    series: resp
+                });
+            }, 'JSON');
+            $.post("<?php echo $baseUrl . '/site/cascadeup'; ?>", filter_data, function (resp) {
+
+                Highcharts.chart('container_up_one', {
+                    chart: {
+                        type: 'column'
+                    },
+                    colors: ['#F44336', '#4A0', '#FFD600'],
+                    title: {
+                        text: 'HIV 95-95-95 Cascade Uptake'
+                    },
+                    subtitle: {
+                        text: 'Comparisson between PLHIV Estimates and KHIS Current On Care '
+                    },
+                    xAxis: {
+                        categories: ['Current on Care for PLHIV', 'Currently On ART for PLHIV', 'Suppressed for PLHIV']
+                    },
+                    yAxis: [{
+                            min: 0,
+                            title: {
+                                text: 'Number of clients'
+                            }
+                        }, {
+                            pointWidth: 0,
+                            min: 0,
+                            max: 100,
+                            opposite: true,
+                            title: {
+                                text: '% Clinical Cascade'
+                            }
+                        }],
+                    tooltip: {
+                        pointFormat: '<span style="color:{series.color}">{series.name}</span>: <b>{point.y}</b> ({point.percentage:.0f}%)<br/>',
+                        shared: true
+                    },
+                    plotOptions: {
+                        column: {
+                            stacking: 'normal',
+                            dataLabels: {
+                                enabled: true
+                            }
+                        },
+                        series: {
+                            pointWidth: 100
+                        },
+                        line: {
+
+                            dataLabels: {
+                                enabled: true,
+                                format: '{y}%',
+                                style: {
+                                    fontWeight: 'bold',
+                                    fontSize: '17px',
+                                    color: "#000"
+                                }
+                            }
+                        }
+
+                    },
+                    series: resp
+                }).reflow();
+            }, 'JSON');
+            $.post("<?php echo $baseUrl . '/site/uptakeclassification'; ?>", filter_data, function (resp) {
+                Highcharts.chart('container_up_three_two', {
+                    chart: {
+                        type: 'column'
+                    },
+                    colors: ['#3949AB', '#4A0', '#FFD600'],
+                    title: {
+                        text: 'HIV Uptake'
+                    },
+                    subtitle: {
+                        text: 'Disaggregated by Age Bands'
+                    },
+                    xAxis: {
+                        categories: ['Adult Male (15+ Years)', 'Adult Female( 15+ Years)', 'Children Male(10-14 Years)', 'Children Female(10-14) Years'],
+                    },
+                    yAxis: {
+                        min: 0,
+                        title: {
+                            text: '% Number of clients'
+                        }
+                    },
+                    tooltip: {
+                        pointFormat: '<span style="color:{series.color}">{series.name}</span>: <b>{point.y}</b> ({point.percentage:.0f}%)<br/>',
+                        shared: true
+                    },
+                    plotOptions: {
+                        series: {
+                            dataLabels: {
+                                enabled: true,
+                                align: 'center',
+                                inside: true,
+                                color: '#FFFFFF',
+                                verticalAlign: 'top'
+                            },
+                        },
+                        column: {
+                            stacking: 'percent'
+                        }
+                    },
+                    series: resp
+                });
+            }, 'JSON');
+            $.post("<?php echo $baseUrl . '/site/uptakeclassificationtwo'; ?>", filter_data, function (resp) {
+                Highcharts.chart('container_up_three_two_two', {
+                    chart: {
+                        type: 'column'
+                    },
+                    colors: ['#3949AB', '#4A0', '#FFD600'],
+                    title: {
+                        text: 'HIV Uptake'
+                    },
+                    subtitle: {
+                        text: 'Disaggregated by Age Bands'
+                    },
+                    xAxis: {
+                        categories: ['Clients on Care and ART'],
+                    },
+                    yAxis: {
+                        min: 0,
+                        title: {
+                            text: '% Number of clients'
+                        }
+                    },
+                    tooltip: {
+                        pointFormat: '<span style="color:{series.color}">{series.name}</span>: <b>{point.y}</b> ({point.percentage:.0f}%)<br/>',
+                        shared: true
+                    },
+                    plotOptions: {
+                        series: {
+                            dataLabels: {
+                                enabled: true,
+                                align: 'center',
+                                inside: true,
+                                color: '#FFFFFF',
+                                verticalAlign: 'top'
+                            },
+                        },
+                        column: {
+                            stacking: 'percent'
+                        }
+                    },
+                    series: resp
+                });
+            }, 'JSON');
+        }
+
+
+        function loadCommodityDashboard(filter_data) {
+            $.post("<?php echo $baseUrl . '/commodity/numbers'; ?>", filter_data, function (resp) {
+                //alert(resp['tx_adult_male']);
+                $('.onART').text(numberWithCommas(resp['tx_curr'] + resp['pmtct']));
+                $('.onARTAdult').text(numberWithCommas(resp['tx_curr_adults']));
+                $('.MEN').text(numberWithCommas(resp['tx_adult_male']));
+                $('.WOMEN').text(numberWithCommas(resp['tx_adult_female']));
+                $('.PMTCT').text(numberWithCommas(resp['pmtct']));
+                $('.PMTCTMOTHER').text(numberWithCommas(resp['pmtct_mother']));
+                $('.PMTCTCHILD').text(numberWithCommas(resp['pmtct_child']));
+                $('.PAEDM').text(numberWithCommas(resp['tx_curr_children_male']));
+                $('.PAEDF').text(numberWithCommas(resp['tx_curr_children_female']));
+                $('.onARTPaed').text(numberWithCommas(resp['tx_curr_children']));
+                $('.onARTPmtct').text(numberWithCommas(resp['pmtct']));
+            }, 'JSON');
+            $.post("<?php echo $baseUrl . '/commodity/consumption'; ?>", filter_data, function (resp) {
+                //console.log(resp[0]['categories'])
+
+                Highcharts.chart('monthlyConsumption', {
+                    chart: {
+                        type: 'spline'
+                    },
+                    title: {
+                        text: 'Consumption Trend - ' + resp[0]['title']
+                    },
+                    colors: ['#536DFE', '#FF4081'],
+                    subtitle: {
+                        text: 'source : KHIS'
+                    },
+                    xAxis: {
+                        categories: resp[1]['categories'],
+                        labels: {
+                            rotation: 270
+                        }
+                    },
+                    yAxis: {
+                        title: {
+                            text: 'Packs'
+                        }
+
+                    },
+                    tooltip: {
+                        shared: true,
+                        valueSuffix: ' Packs'
+                    },
+                    credits: {
+                        enabled: false
+                    },
+                    plotOptions: {
+                        spline: {
+                            fillOpacity: 0.5
+                        }
+                    },
+                    series: [{
+                            name: resp[1]['name'],
+                            data: resp[1]['y']
+                        }, {
+                            name: resp[2]['name2'],
+                            data: resp[2]['y2']
+                        }]
+                });
+            }, 'JSON');
+            $.post("<?php echo $baseUrl . '/commodity/soh'; ?>", filter_data, function (resp) {
+                //console.log(resp[0]['categories'])
+
+                Highcharts.chart('monthlySoh', {
+                    chart: {
+                        type: 'spline'
+                    },
+                    title: {
+                        text: ' AMC vs MOS- ' + resp[0]['title']
+                    },
+                    colors: ['#212121', '#6200EA'],
+                    subtitle: {
+                        text: 'source : KHIS'
+                    },
+                    xAxis: {
+                        categories: resp[1]['categories'],
+                        labels: {
+                            rotation: 270
+                        }
+                    },
+                    yAxis: [
+                        {
+                            lineWidth: 1,
+                            title: {
+                                text: 'AMC Packs'
+                            }
+
+                        }, {
+                            lineWidth: 1,
+                            opposite: true,
+                            title: {
+                                text: 'MOS'
+                            }
+                        },
+                    ],
+                    tooltip: {
+                        shared: true,
+                        valueSuffix: ''
+                    },
+                    credits: {
+                        enabled: false
+                    },
+                    plotOptions: {
+                        spline: {
+                            fillOpacity: 0.5
+                        }
+                    },
+                    series: [{
+                            name: resp[1]['name'],
+                            data: resp[1]['y'],
+                            yAxis: 1
+                        }, {
+                            name: resp[2]['name2'],
+                            data: resp[2]['y2'],
+                        }]
+                });
+            }, 'JSON');
+            $.post("<?php echo $baseUrl . '/commodity/adultpager'; ?>", filter_data, function (resp) {
+                Highcharts.chart('2pager1', {
+                    chart: {
+                        type: 'bar'
+                    },
+                    title: {
+                        text: 'National Tracer Commodities - Adults MOS As At ' + resp[0]['title']
+                    },
+                    colors: ['#6200EA', '#212121'],
+                    subtitle: {
+                        text: 'Source: KHIS 729B & 730B Rev.2019 and KEMSA LMIS'
+                    },
+                    xAxis: {
+                        categories: resp[0]['columns'],
+                    },
+                    yAxis: [{
+                            min: 0,
+                            max: 24,
+                            tickInterval: 1,
+                            title: {
+                                text: 'Months of Stock'
+                            }
+                        }, {
+                            min: 0,
+                            max: 24,
+                            tickInterval: 1,
+                            opposite: true, //optional, you can have it on the same side.
+                            title: {
+                                text: 'Months of Stock'
+                            },
+                            plotLines: [{
+                                    value: 9,
+                                    color: 'black',
+                                    dashStyle: 'shortdash',
+                                    width: 4,
+                                    zIndex: 10,
+                                    x: -10,
+                                    label: {
+                                        text: 'Under Stocked'
+                                    }
+                                }, {
+                                    value: 15,
+                                    color: 'black',
+                                    dashStyle: 'shortdash',
+                                    width: 4,
+                                    zIndex: 10,
+                                    label: {
+                                        text: 'Over Stocked'
+                                    }
+                                }],
+                        }],
+                    legend: {
+                        reversed: true
+                    },
+                    plotOptions: {
+                        series: {
+                            stacking: 'normal'
+                        }
+                    },
+                    series: resp[0]['series']
+                });
+            }, 'JSON')
+
+            $.post("<?php echo $baseUrl . '/commodity/paedspager'; ?>", filter_data, function (resp) {
+                Highcharts.chart('2pager2', {
+                    chart: {
+                        type: 'bar'
+                    },
+                    title: {
+                        text: 'National Tracer Commodities - Paeds MOS As At ' + resp[0]['title']
+                    },
+                    colors: ['#6200EA', '#212121'],
+                    subtitle: {
+                        text: 'Source: KHIS 729B & 730B Rev.2019 and KEMSA LMIS'
+                    },
+                    xAxis: {
+                        categories: resp[0]['columns']
+                    },
+                    yAxis: [{
+                            min: 0,
+                            max: 24,
+                            tickInterval: 1,
+                            title: {
+                                text: 'Months of Stock'
+                            }
+                        }, {
+                            min: 0,
+                            max: 24,
+                            tickInterval: 1,
+                            opposite: true, //optional, you can have it on the same side.
+                            title: {
+                                text: 'Months of Stock'
+                            },
+                            plotLines: [{
+                                    value: 9,
+                                    color: 'black',
+                                    dashStyle: 'shortdash',
+                                    width: 4,
+                                    zIndex: 10,
+                                    x: -10,
+                                    label: {
+                                        text: 'Under Stocked'
+                                    }
+                                }, {
+                                    value: 15,
+                                    color: 'black',
+                                    dashStyle: 'shortdash',
+                                    width: 4,
+                                    zIndex: 10,
+                                    label: {
+                                        text: 'Over Stocked'
+                                    }
+                                }],
+                        }],
+                    legend: {
+                        reversed: true
+                    },
+                    plotOptions: {
+                        series: {
+                            stacking: 'normal'
+                        }
+                    },
+                    series: resp[0]['series']
+                });
+            }, 'JSON');
+            $.post("<?php echo $baseUrl . '/commodity/adultmos'; ?>", filter_data, function (resp) {
+                //console.log(resp[0]['categories'])
+
+                Highcharts.chart('AdultMos', {
+                    chart: {
+                        type: 'bar'
+                    },
+                    title: {
+                        text: resp[0]['title']
+                    },
+                    colors: ['#6200EA', '#212121'],
+                    subtitle: {
+                        text: 'source : KHIS'
+                    },
+                    xAxis: {
+                        categories: resp[1]['categories'],
+                    },
+                    yAxis: [{
+                            tickInterval: 10,
+                            title: {
+                                text: 'Average Monthly Consumption (AMC)'
+                            },
+                            labels: {
+                                rotation: 270
+                            }
+                        }],
+                    tooltip: {
+                        shared: true,
+                        valueSuffix: ' Packs'
+                    },
+                    credits: {
+                        enabled: false
+                    },
+                    plotOptions: {
+                        series: {
+                            dataLabels: {
+                                enabled: true,
+                                align: 'right',
+                                color: '#fff',
+                                style: {fontWeight: 'bolder'},
+                                formatter: function () {
+                                    return this.y
+                                },
+                                inside: true,
+                                //rotation: 270
+                            },
+                            pointPadding: 0.1,
+                            groupPadding: 0
+                        }
+                    },
+                    series: [{
+                            name: resp[1]['name'],
+                            data: resp[1]['y']
+                        }]
+                });
+            }, 'JSON');
+            $.post("<?php echo $baseUrl . '/commodity/paedmos'; ?>", filter_data, function (resp) {
+                //console.log(resp[0]['categories'])
+
+                Highcharts.chart('PaedMos', {
+                    chart: {
+                        type: 'bar'
+                    },
+                    title: {
+                        text: resp[0]['title']
+                    },
+                    colors: ['#6200EA', '#212121'],
+                    subtitle: {
+                        text: 'source : KHIS'
+                    },
+                    xAxis: {
+                        categories: resp[1]['categories']
+
+                    },
+                    yAxis: [{
+                            tickInterval: 10,
+                            title: {
+                                text: 'Average Monthly Consumption (AMC)'
+                            }, labels: {
+                                rotation: 270
+                            }
+                        }],
+                    tooltip: {
+                        shared: true,
+                        valueSuffix: ' Packs'
+                    },
+                    credits: {
+                        enabled: false
+                    },
+                    plotOptions: {
+                        series: {
+                            dataLabels: {
+                                enabled: true,
+                                align: 'right',
+                                color: '#fff',
+                                style: {fontWeight: 'bolder'},
+                                formatter: function () {
+                                    return this.y
+                                },
+                                inside: true,
+                                // rotation: 270
+                            },
+                            pointPadding: 0.1,
+                            groupPadding: 0
+                        }
+                    },
+                    series: [{
+                            name: resp[1]['name'],
+                            data: resp[1]['y']
+                        }]
+                });
+            }, 'JSON');
+            $.post("<?php echo $baseUrl . '/commodity/reportingrates'; ?>", filter_data, function (resp) {
+                //console.log(resp['series'])
+
+                Highcharts.chart('reportingRates', {
+                    chart: {
+                        type: 'column'
+                    },
+                    title: {
+                        text: 'County Reporting Rates  Aug-2021'
+                    },
+                    colors: ['#6200EA'],
+                    subtitle: {
+                        text: 'Source: KHIS'
+                    },
+                    xAxis: {
+                        categories: resp[0]['categories'],
+                        labels: {
+                            rotation: 270
+
+                        },
+                    },
+                    yAxis: {
+                        min: 0,
+                        max: 100,
+                        title: {
+                            text: '%age Reporting Rates',
+                        }
+
+                    },
+                    tooltip: {
+                        pointFormat: '<span style="color:{series.color}">{series.name}</span>: <b>{point.y}</b> {point.percentage:.0f}%<br/>',
+                        shared: true
+                    },
+                    plotOptions: {
+                        line: {
+                            dataLabels: {
+                                enabled: true
+                            }
+                        },
+                        series: {
+                            pointWidth: 100
+                        }
+
+                    },
+                    series: resp[0]['series']
+                }).reflow();
+            }
+            , 'JSON');
+
+
+
+        }
+
+        $.getJSON("<?php echo $baseUrl . '/commodity/commoditystatustable'; ?>", function (response) {
+            //console.log(response);
+            $('#StockStstusTable').DataTable({
+                "processing": true, // for show progress bar
+                "autoWidth": false,
+                data: response,
+                "columns": [
+                    {"data": "county"},
+                    {"data": "sub_county"},
+                    {"data": "facility"},
+                    {"data": "drug"},
+                    {"data": "tx_curr"},
+                    {"data": "stock_on_hand", className: "numberColumn"},
+                    {"data": "qty_consumed", className: "numberColumn"},
+                    {"data": "qty_received", className: "numberColumn"}
+
+                ],
+                "columnsdefs": [
+                    {"className": "classname", "aTargets": [2]}
+                ]
+            });
+        });
+
+        $.getJSON("<?php echo $baseUrl . '/commodity/lowmos'; ?>", function (response) {
+            // console.log(response);
+            $('#lowMOSTable').DataTable({
+                "processing": true, // for show progress bar
+                "autoWidth": false,
+                data: response,
+                "columns": [
+                    {"data": "drug", },
+                    {"data": "facility"},
+                    {"data": "county"},
+                    {"data": "Subcounty"},
+                    {"data": "tx_curr"},
+                    {"data": "balance", className: "numberColumn"},
+                    {"data": "amc", className: "numberColumn"},
+                    {"data": "mos", className: "numberColumn"}
+
+                ]
+            });
+        });
+
+        $.getJSON("<?php echo $baseUrl . '/commodity/highmos'; ?>", function (response) {
+            //console.log(response);
+            $('#highMOSTable').DataTable({
+                "processing": true, // for show progress bar
+                "autoWidth": false,
+                data: response,
+                "columns": [
+                    {"data": "drug"},
+                    {"data": "facility"},
+                    {"data": "county"},
+                    {"data": "Subcounty"},
+                    {"data": "tx_curr"},
+                    {"data": "balance", className: "numberColumn"},
+                    {"data": "amc", className: "numberColumn"},
+                    {"data": "mos", className: "numberColumn"}
+
+                ]
+            });
+        });
+
+    });
+    function numberWithCommas(x) {
+        return x.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+    }
+
+</script>

@@ -1,0 +1,113 @@
+
+.pdf-table {
+	background-color: #FFFFFF;
+	border: 0;
+	margin-bottom: 1rem;
+	max-width: 100%;
+	width: 100%;
+	border-collapse: collapse;
+	clear: both;
+	margin-top: 6px !important;
+	margin-bottom: 6px !important;
+	max-width: none !important;
+	border-collapse: separate !important;
+	border-spacing: 0;
+}
+
+.pdf-table tbody td, .pdf-table tbody th {
+	font-size: 1rem;
+	font-weight: 400;
+	height: 2.0rem;
+	padding-top: 0 !important;
+	padding-bottom: 0 !important;
+	padding-left: 3px !important;
+	padding-right: 3px !important;
+	/* border: 1px solid #000000; */
+	border-collapse: collapse;
+}
+
+table, th, td {
+	border: 1px solid black;
+	border-collapse: collapse;
+}
+
+.pdf-table thead td, .pdf-table thead th, .pdf-table tfoot td, .pdf-table tfoot th {
+	font-size: 1rem;
+	font-weight: bold !important;
+	height: 2.0rem;
+	padding-top: 3px !important;
+	padding-bottom: 3px !important;
+	padding-left: 3px !important;
+	padding-right: 3px !important;
+	/* border: 1px solid #000000; */
+	/* border-collapse: collapse; */
+	background-color: #d9d9d9;
+	text-align: left;
+	color: black;
+	text-decoration: none;
+}
+
+.pdf-table .border-none-right {
+	border-right: none  !important;
+	border-left: none  !important;
+}
+
+.pdf-table .border-none-left {
+	border-right: none  !important;
+	border-left: none  !important;
+}
+
+.pdf-table tbody th {
+	background-color: #d9d9d9;
+}
+
+.pdf-table tbody tr:nth-child(even) {background: #F5F5F5}
+.pdf-table tbody tr:nth-child(odd) {background: #FFFFFF}
+
+.company-name {
+	margin: 3px;
+	font-weight: 900
+}
+
+.pdf-table .number-column {
+	text-align : right !important;
+}
+
+.pdf-signoff-table .underline {
+	border-bottom: 1px solid black;
+}
+
+.pdf-signoff-table td, .pdf-signoff-table th {
+	font-size: 1rem;
+	font-weight: 900;
+	height: 4rem;
+	padding-right: 5px !important;
+	vertical-align: bottom;
+}
+
+.title {
+	text-align:center; 
+	text-decoration: underline; 
+	font-weight: 900;
+	font-size: 2rem;
+}
+
+.company-name {
+	text-align:center; 
+	font-weight: 900;
+	font-size: 1rem;
+}
+
+.supplier-name {
+	text-align:left; 
+	font-weight: 900;
+	font-size: 1rem;
+}
+
+.space {
+	height: 10px;
+}
+
+.table-bordered {
+    /* border: 1px solid #E1E1E1; */
+}
